@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crônicas de Eldoria — RPG</title>
+<style>
+:root{--bg:#171923;--panel:#242838;--panel2:#30364a;--gold:#e6bd69;--cream:#f1e8d5;--muted:#aeb5c7;--red:#d96767;--blue:#68a9e8;--green:#75c995}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#343149,#171923 58%);color:var(--cream);font:16px Georgia,serif;min-height:100vh}
+header{padding:22px 16px;text-align:center;border-bottom:1px solid #62543b;background:#171923cc}
+h1{margin:0;color:var(--gold);letter-spacing:2px;font-size:clamp(25px,5vw,40px)}header p{color:var(--muted);margin:8px 0 0}
+main{max-width:1100px;margin:22px auto;padding:0 14px 40px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+button,select,input{font:inherit}button{background:#46435a;color:var(--cream);border:1px solid #77708c;border-radius:9px;padding:10px 14px;cursor:pointer;transition:.15s}
+button:hover{filter:brightness(1.18);transform:translateY(-1px)}button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+button.active,.primary{background:#765b32;border-color:var(--gold)}.danger{background:#713b45}.good{background:#315e4b}
+.layout{display:grid;grid-template-columns:1.15fr .85fr;gap:15px}.panel{background:linear-gradient(145deg,var(--panel),#202432);border:1px solid #454b60;border-radius:14px;padding:17px;box-shadow:0 10px 28px #0003}
+h2,h3{color:var(--gold);margin:0 0 12px}h2{font-size:23px}h3{font-size:18px}
+.scene{min-height:230px;border-radius:12px;padding:20px;background:linear-gradient(145deg,#4b493f,#252b38);border:1px solid #82714d;display:flex;flex-direction:column;justify-content:space-between}
+.scene .emoji{font-size:58px;text-align:center;margin:12px}.scene p{line-height:1.5;color:#e4dccb}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.stat{background:#171c29;padding:10px;border-radius:8px;font-size:14px}
+.bar{height:9px;background:#111722;border-radius:8px;overflow:hidden;margin-top:5px}.fill{height:100%;width:50%;transition:width .25s}.hp{background:var(--red)}.mp{background:var(--blue)}.xp{background:var(--gold)}
+.small{color:var(--muted);font-size:13px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:8px 0}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.hidden{display:none!important}.log{height:175px;overflow:auto;background:#141925;border-radius:9px;padding:11px;font-size:14px;line-height:1.5}.log p{margin:4px 0}.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #41475a}
+select,input{background:#171c29;color:var(--cream);border:1px solid #555d73;border-radius:7px;padding:9px;max-width:100%}
+label{display:block;color:var(--muted);font-size:14px;margin:10px 0 5px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.choice{background:#202638;border:1px solid #555d73;border-radius:10px;padding:12px;text-align:left}.choice.selected{border-color:var(--gold);background:#423b31}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.scene{min-height:190px}}
+</style>
+</head>
+<body>
+<header><h1>⚔ CRÔNICAS DE ELDORIA ⚔</h1><p>Uma aventura medieval de escolhas, monstros e lendas</p></header>
+<main>
+<div class="tabs">
+<button class="active" data-tab="hub">🏰 Vila de Eldoria</button>
+<button data-tab="battle">⚔ Batalha</button>
+<button data-tab="shop">🪙 Loja</button>
+<button data-tab="custom">🧙 Personagem</button>
+<button data-tab="world">🗺 Explorar</button>
+</div>
+<div class="layout">
+<section class="panel">
+<div id="hub" class="page">
+<h2>🏰 Praça central</h2>
+<div class="scene"><div class="emoji">🏰 🏘️ 🔥</div><div><h3>Bem-vindo à Vila de Eldoria</h3><p>O vilarejo é um refúgio entre as antigas estradas. O ferreiro trabalha perto do portão, mercadores anunciam seus produtos e aventureiros se preparam para explorar as terras selvagens.</p></div></div>
+<div class="actions"><button class="primary" onclick="go('world')">Partir em aventura</button><button onclick="go('shop')">Visitar mercador</button><button onclick="go('custom')">Ajustar personagem</button></div>
+</div>
+<div id="battle" class="page hidden">
+<h2>⚔ Campo de batalha</h2>
+<div class="scene" id="battleScene"><div class="emoji" id="enemyEmoji">🐺</div><div><h3 id="enemyName">Lobo da Floresta</h3><div class="small" id="enemyMeta">Nível 1 · Criatura</div><div class="row"><span>Vida do inimigo</span><b id="enemyHpText">30/30</b></div><div class="bar"><div id="enemyHpBar" class="fill hp"></div></div><p id="enemyDesc">Uma criatura territorial observa seus movimentos.</p></div></div>
+<div class="actions"><button class="primary" id="attackBtn" onclick="attack()">Ataque básico</button><button onclick="skill()">Habilidade</button><button onclick="potion()">Poção</button><button class="danger" onclick="flee()">Fugir</button></div>
+<p class="small">Habilidade consome mana. Poções recuperam vida. Derrotar inimigos concede experiência e moedas.</p>
+</div>
+<div id="shop" class="page hidden"><h2>🪙 Mercador de Eldoria</h2><p class="small">Itens simples para quem pretende voltar vivo da estrada.</p><div id="shopItems"></div></div>
+<div id="custom" class="page hidden">
+<h2>🧙 Seu aventureiro</h2>
+<label>Nome do personagem</label><input id="nameInput" maxlength="18" value="Aventureiro" onchange="rename()">
+<label>Classe</label><div class="grid3" id="classChoices"></div>
+<label>Visual / título</label><select id="lookSelect" onchange="changeLook()"><option>Viajante</option><option>Cavaleiro</option><option>Aprendiz arcano</option><option>Patrulheiro</option><option>Mercenário</option></select>
+<p class="small">A classe define seus atributos e sua habilidade especial. Você pode trocar a aparência quando quiser.</p>
+</div>
+<div id="world" class="page hidden">
+<h2>🗺 Regiões de Eldoria</h2><p class="small">Escolha uma região para encontrar inimigos. Regiões mais perigosas oferecem melhores recompensas.</p>
+<div id="regions"></div>
+</div>
+</section>
+<aside class="panel">
+<h2>📜 Ficha do aventureiro</h2>
+<div class="row"><b id="heroName">Aventureiro</b><span id="heroClass">Guerreiro</span></div>
+<div class="row"><span id="heroLevel">Nível 1</span><span id="heroGold">🪙 20</span></div>
+<div class="small">VIDA <span id="hpText"></span></div><div class="bar"><div id="hpBar" class="fill hp"></div></div>
+<div class="small" style="margin-top:9px">MANA <span id="mpText"></span></div><div class="bar"><div id="mpBar" class="fill mp"></div></div>
+<div class="small" style="margin-top:9px">EXPERIÊNCIA <span id="xpText"></span></div><div class="bar"><div id="xpBar" class="fill xp"></div></div>
+<div class="stats" style="margin-top:13px">
+<div class="stat">⚔ Ataque<br><b id="atkStat">7</b></div><div class="stat">🛡 Defesa<br><b id="defStat">3</b></div>
+<div class="stat">✨ Poder mágico<br><b id="magStat">4</b></div><div class="stat">🧪 Poções<br><b id="potStat">2</b></div>
+</div>
+<h3 style="margin-top:20px">📖 Registro da jornada</h3><div class="log" id="log"><p>O sino da vila anuncia o início de uma nova aventura.</p></div>
+</aside>
+</div>
+</main>
+<footer>Crônicas de Eldoria · Protótipo RPG · Seu progresso fica salvo neste navegador.</footer>
+<script>
+const classes={
+"Guerreiro":{hp:115,mp:35,atk:12,def:8,mag:3,skill:"Golpe pesado",desc:"Mais vida e defesa. Um combatente resistente."},
+"Mago":{hp:78,mp:85,atk:5,def:3,mag:14,skill:"Rajada arcana",desc:"Mana e poder mágico elevados."},
+"Patrulheiro":{hp:92,mp:55,atk:10,def:5,mag:7,skill:"Disparo preciso",desc:"Equilíbrio entre ataque e magia."},
+"Paladino":{hp:105,mp:55,atk:9,def:9,mag:8,skill:"Luz restauradora",desc:"Defesa forte e magia de recuperação."},
+"Ladino":{hp:86,mp:48,atk:13,def:4,mag:5,skill:"Ataque veloz",desc:"Ataques físicos fortes e ágeis."}
+};
+const regions=[
+{name:"Bosque dos Sussurros",emoji:"🌲",level:1,desc:"Trilhas antigas e criaturas territoriais.",enemies:["Lobo da Floresta","Slime Verde","Javali Selvagem"]},
+{name:"Ruínas Afundadas",emoji:"🏛️",level:3,desc:"Pedras esquecidas e guardiões enferrujados.",enemies:["Esqueleto Guardião","Aranha de Pedra","Mímico Antigo"]},
+{name:"Montanhas Cinzentas",emoji:"⛰️",level:5,desc:"Ventos fortes e monstros das montanhas.",enemies:["Ogro Errante","Grifo Jovem","Golem de Granito"]},
+{name:"Cripta do Eclipse",emoji:"☠️",level:8,desc:"Uma cripta selada por magia antiga.",enemies:["Cavaleiro Espectral","Bruxa da Cripta","Dragão Menor"]}
+];
+const enemyData={
+"Lobo da Floresta":["🐺",30,7,2,18,9,"Um caçador territorial."],"Slime Verde":["🟢",24,6,1,15,7,"Uma criatura gelatinosa."],"Javali Selvagem":["🐗",38,8,3,22,11,"Forte e teimoso."],
+"Esqueleto Guardião":["💀",52,11,4,32,16,"Um antigo soldado reanimado."],"Aranha de Pedra":["🕷️",45,12,3,30,15,"Uma aranha de carapaça rígida."],"Mímico Antigo":["📦",62,14,4,40,22,"Um baú que não deveria estar aqui."],
+"Ogro Errante":["👹",85,17,6,55,28,"Um gigante de temperamento difícil."],"Grifo Jovem":["🦅",78,19,5,58,30,"Uma criatura alada e veloz."],"Golem de Granito":["🗿",105,15,10,65,34,"Pedra animada por runas."],
+"Cavaleiro Espectral":["👻",125,22,9,90,45,"Um guerreiro preso à cripta."],"Bruxa da Cripta":["🧙‍♀️",105,25,6,95,50,"Uma feiticeira das ruínas."],"Dragão Menor":["🐉",175,29,12,150,80,"Um jovem dragão que guarda o coração da cripta."]};
+let hero={name:"Aventureiro",cls:"Guerreiro",look:"Viajante",level:1,xp:0,gold:20,hp:115,mp:35,potions:2,weapon:0,armor:0};
+let enemy=null,region=0,busy=false;
+function maxHp(){return classes[hero.cls].hp+(hero.level-1)*13+hero.armor*5}
+function maxMp(){return classes[hero.cls].mp+(hero.level-1)*7}
+function stats(){let c=classes[hero.cls];return {atk:c.atk+(hero.level-1)*2+hero.weapon*3,def:c.def+Math.floor((hero.level-1)*1.2)+hero.armor*2,mag:c.mag+(hero.level-1)*2}}
+function log(s){let el=document.getElementById('log');el.innerHTML+='<p>› '+s+'</p>';el.scrollTop=el.scrollHeight}
+function render(){
+let s=stats(),mh=maxHp(),mm=maxMp();hero.hp=Math.min(hero.hp,mh);hero.mp=Math.min(hero.mp,mm);
+document.getElementById('heroName').textContent=hero.name+' · '+hero.look;document.getElementById('heroClass').textContent=hero.cls;
+document.getElementById('heroLevel').textContent='Nível '+hero.level;document.getElementById('heroGold').textContent='🪙 '+hero.gold;
+document.getElementById('hpText').textContent=hero.hp+'/'+mh;document.getElementById('mpText').textContent=hero.mp+'/'+mm;document.getElementById('xpText').textContent=hero.xp+'/'+(hero.level*45);
+document.getElementById('hpBar').style.width=hero.hp/mh*100+'%';document.getElementById('mpBar').style.width=hero.mp/mm*100+'%';document.getElementById('xpBar').style.width=hero.xp/(hero.level*45)*100+'%';
+document.getElementById('atkStat').textContent=s.atk;document.getElementById('defStat').textContent=s.def;document.getElementById('magStat').textContent=s.mag;document.getElementById('potStat').textContent=hero.potions;
+document.getElementById('attackBtn').disabled=busy||!enemy;
+}
+function go(tab){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));document.getElementById(tab).classList.remove('hidden');document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+function buildClasses(){let box=document.getElementById('classChoices');box.innerHTML='';Object.entries(classes).forEach(([n,c])=>{let b=document.createElement('button');b.className='choice'+(hero.cls===n?' selected':'');b.innerHTML='<b>'+n+'</b><br><span class="small">'+c.desc+'</span>';b.onclick=()=>setClass(n);box.appendChild(b)})}
+function setClass(n){let oldHp=hero.hp/maxHp();let oldMp=hero.mp/maxMp();hero.cls=n;hero.hp=Math.round(maxHp()*oldHp);hero.mp=Math.round(maxMp()*oldMp);buildClasses();render();log('Classe alterada para '+n+'.')}
+function rename(){hero.name=document.getElementById('nameInput').value.trim()||'Aventureiro';render()}
+function changeLook(){hero.look=document.getElementById('lookSelect').value;render();log('Novo visual equipado: '+hero.look+'.')}
+function buildRegions(){let box=document.getElementById('regions');box.innerHTML='';regions.forEach((r,i)=>{let b=document.createElement('button');b.className='choice';b.style.width='100%';b.style.margin='5px 0';b.disabled=hero.level<r.level;b.innerHTML='<b>'+r.emoji+' '+r.name+'</b> <span class="small">· Nível recomendado '+r.level+'</span><br><span class="small">'+r.desc+'</span>';b.onclick=()=>startRegion(i);box.appendChild(b)})}
+function startRegion(i){region=i;let r=regions[i],name=r.enemies[Math.floor(Math.random()*r.enemies.length)];spawn(name);go('battle');log('Você entrou em '+r.name+'.');}
+function spawn(name){let d=enemyData[name],scale=1+(hero.level-1)*.12+(region*.12);enemy={name,emoji:d[0],max:Math.round(d[1]*scale),hp:Math.round(d[1]*scale),atk:Math.round(d[2]*scale),def:d[3],xp:d[4]+region*5,gold:d[5]+region*3,desc:d[6]};document.getElementById('enemyEmoji').textContent=enemy.emoji;document.getElementById('enemyName').textContent=enemy.name;document.getElementById('enemyMeta').textContent='Nível '+(regions[region].level+Math.max(0,hero.level-regions[region].level))+' · Inimigo';document.getElementById('enemyDesc').textContent=enemy.desc;updateEnemy();render()}
+function updateEnemy(){if(!enemy)return;document.getElementById('enemyHpText').textContent=Math.max(0,enemy.hp)+'/'+enemy.max;document.getElementById('enemyHpBar').style.width=Math.max(0,enemy.hp/enemy.max*100)+'%'}
+function hit(dmg){enemy.hp=Math.max(0,enemy.hp-dmg);updateEnemy();log('Você causou '+dmg+' de dano.');if(enemy.hp<=0){win();return true}return false}
+function enemyTurn(){if(!enemy)return;let s=stats(),dmg=Math.max(1,enemy.atk-s.def+Math.floor(Math.random()*4)-1);hero.hp=Math.max(0,hero.hp-dmg);log(enemy.name+' atacou e causou '+dmg+' de dano.');if(hero.hp<=0){hero.hp=Math.ceil(maxHp()*.45);hero.gold=Math.max(0,hero.gold-8);enemy=null;log('Você foi levado de volta à vila. Recuperou-se, mas perdeu 8 moedas.');go('hub')}render()}
+function attack(){if(!enemy||busy)return;let s=stats(),dmg=Math.max(1,s.atk+Math.floor(Math.random()*6)-enemy.def);if(!hit(dmg))enemyTurn();render()}
+function skill(){if(!enemy||busy)return;let cost=18;if(hero.mp<cost){log('Mana insuficiente para usar a habilidade.');return}hero.mp-=cost;let s=stats(),dmg;if(hero.cls==='Paladino'){let heal=26+hero.level*4;hero.hp=Math.min(maxHp(),hero.hp+heal);dmg=Math.max(2,Math.floor(s.mag*1.2-enemy.def/2));log('Luz restauradora recuperou '+heal+' de vida.')}else if(hero.cls==='Mago'){dmg=s.mag*2+Math.floor(Math.random()*8);log('Rajada arcana atingiu o inimigo!')}else if(hero.cls==='Ladino'){dmg=s.atk*1.7+Math.floor(Math.random()*7);log('Ataque veloz!')}else if(hero.cls==='Patrulheiro'){dmg=s.atk+s.mag+Math.floor(Math.random()*7);log('Disparo preciso!')}else{dmg=s.atk*1.8+Math.floor(Math.random()*8);log('Golpe pesado!')}if(!hit(Math.round(dmg)))enemyTurn();render()}
+function potion(){if(hero.potions<=0){log('Você não tem poções.');return}if(hero.hp>=maxHp()){log('Sua vida já está cheia.');return}hero.potions--;let h=Math.min(maxHp()-hero.hp,42+hero.level*5);hero.hp+=h;log('Você usou uma poção e recuperou '+h+' de vida.');if(enemy)enemyTurn();render()}
+function flee(){if(!enemy)return;enemy=null;log('Você recuou para um local seguro.');go('world');render()}
+function win(){let e=enemy;enemy=null;hero.xp+=e.xp;hero.gold+=e.gold;log('Vitória! +'+e.xp+' EXP e +'+e.gold+' moedas.');while(hero.xp>=hero.level*45){hero.xp-=hero.level*45;hero.level++;hero.hp=maxHp();hero.mp=maxMp();log('SUBIU DE NÍVEL! Agora você é nível '+hero.level+'. Vida e mana restauradas.')}render();buildRegions();setTimeout(()=>{if(!enemy)document.getElementById('enemyDesc').textContent='Vitória! Escolha outra região para continuar.'},100)}
+function buy(item){let data={potion:[12,()=>hero.potions++],sword:[35,()=>hero.weapon++],armor:[40,()=>hero.armor++],ether:[18,()=>hero.mp=Math.min(maxMp(),hero.mp+35)]};let [cost,fn]=data[item];if(hero.gold<cost){log('Moedas insuficientes.');return}hero.gold-=cost;fn();log('Compra realizada: '+({potion:'Poção',sword:'Espada reforçada',armor:'Armadura reforçada',ether:'Éter'}[item])+'.');render();buildShop()}
+function buildShop(){let items=[['potion','🧪 Poção de cura','Recupera 1 carga de poção.',12],['ether','🔷 Éter','Recupera até 35 de mana.',18],['sword','⚔️ Espada reforçada','Aumenta o ataque em 3.',35],['armor','🛡️ Armadura reforçada','Aumenta a defesa em 2 e vida máxima em 5.',40]];document.getElementById('shopItems').innerHTML=items.map(x=>`<div class="item"><div><b>${x[1]}</b><div class="small">${x[2]}</div></div><button onclick="buy('${x[0]}')">🪙 ${x[3]}</button></div>`).join('')}
+buildClasses();buildRegions();buildShop();render();
+</script>
+</body>
+</html>
